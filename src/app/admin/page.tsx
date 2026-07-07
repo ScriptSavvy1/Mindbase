@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import {
   Shield,
   Users,
@@ -15,7 +14,6 @@ import {
   UserCheck,
   Clock,
   AlertTriangle,
-  Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -138,7 +136,7 @@ export default function AdminPanel() {
             }))
           );
         }
-      } catch {}
+      } catch { }
     }
     load();
   }, [profile, router]);
@@ -148,7 +146,7 @@ export default function AdminPanel() {
       const supabase = createClient();
       await supabase.from("courses").update({ status: "approved" }).eq("id", courseId);
       setPendingCourses(pendingCourses.filter((c) => c.id !== courseId));
-    } catch {}
+    } catch { }
   };
 
   const handleRejectCourse = async (courseId: string) => {
@@ -156,7 +154,7 @@ export default function AdminPanel() {
       const supabase = createClient();
       await supabase.from("courses").update({ status: "rejected" }).eq("id", courseId);
       setPendingCourses(pendingCourses.filter((c) => c.id !== courseId));
-    } catch {}
+    } catch { }
   };
 
   const handleApproveInstructor = async (userId: string) => {
@@ -164,7 +162,7 @@ export default function AdminPanel() {
       const supabase = createClient();
       await supabase.from("profiles").update({ role: "instructor" }).eq("id", userId);
       setPendingInstructors(pendingInstructors.filter((i) => i.id !== userId));
-    } catch {}
+    } catch { }
   };
 
   const handleRejectInstructor = async (userId: string) => {
@@ -172,7 +170,7 @@ export default function AdminPanel() {
       const supabase = createClient();
       await supabase.from("profiles").update({ role: "learner" }).eq("id", userId);
       setPendingInstructors(pendingInstructors.filter((i) => i.id !== userId));
-    } catch {}
+    } catch { }
   };
 
   const roleColors: Record<string, string> = {
@@ -196,20 +194,12 @@ export default function AdminPanel() {
               <p className="text-text-muted text-sm">Platform management and moderation</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            {pendingCourses.length > 0 && (
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-warning/10 border border-warning/20 rounded-lg text-sm text-warning">
-                <AlertTriangle className="w-4 h-4" />
-                {pendingCourses.length} pending
-              </div>
-            )}
-            <Link href="/admin/courses/new">
-              <Button variant="primary" size="sm">
-                <Plus className="w-4 h-4" />
-                Post New Course
-              </Button>
-            </Link>
-          </div>
+          {pendingCourses.length > 0 && (
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-warning/10 border border-warning/20 rounded-lg text-sm text-warning">
+              <AlertTriangle className="w-4 h-4" />
+              {pendingCourses.length} courses pending review
+            </div>
+          )}
         </div>
 
         {/* Stats */}
@@ -242,17 +232,15 @@ export default function AdminPanel() {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
-                activeTab === tab.key
+              className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${activeTab === tab.key
                   ? "bg-accent text-white"
                   : "text-text-secondary hover:text-text-primary"
-              }`}
+                }`}
             >
               {tab.label}
               {tab.count !== null && tab.count > 0 && (
-                <span className={`w-5 h-5 rounded-full text-[10px] flex items-center justify-center ${
-                  activeTab === tab.key ? "bg-white/20" : "bg-warning/20 text-warning"
-                }`}>
+                <span className={`w-5 h-5 rounded-full text-[10px] flex items-center justify-center ${activeTab === tab.key ? "bg-white/20" : "bg-warning/20 text-warning"
+                  }`}>
                   {tab.count}
                 </span>
               )}
@@ -290,7 +278,7 @@ export default function AdminPanel() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0 ml-4">
-                      <Button variant="ghost" size="sm" onClick={() => {}}>
+                      <Button variant="ghost" size="sm" onClick={() => { }}>
                         <Eye className="w-4 h-4" /> Preview
                       </Button>
                       <Button variant="primary" size="sm" onClick={() => handleApproveCourse(course.id)}>

@@ -36,7 +36,11 @@ export default function CreateCoursePage() {
       return;
     }
 
-    status === "pending" ? setSubmitting(true) : setSaving(true);
+    if (status === "pending") {
+      setSubmitting(true);
+    } else {
+      setSaving(true);
+    }
 
     try {
       const supabase = createClient();
