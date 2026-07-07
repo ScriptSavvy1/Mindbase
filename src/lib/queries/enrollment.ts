@@ -41,9 +41,11 @@ export async function createEnrollment(userId: string, courseId: string) {
   if (error) throw error;
 
   // Increment course student count
-  await supabase.rpc("increment_students", { cid: courseId }).catch(() => {
+  try {
+    await supabase.rpc("increment_students", { cid: courseId });
+  } catch {
     // RPC may not exist yet, ignore
-  });
+  }
 
   return data as Enrollment;
 }
