@@ -20,54 +20,18 @@ import { useAuth } from "@/contexts/AuthContext";
 import { createClient } from "@/lib/supabase/client";
 import type { Enrollment, Course } from "@/types";
 
-// Sample data
-const sampleEnrollments = [
-  {
-    id: "e1", user_id: "u1", course_id: "c1", progress: 65, completed_lessons: [], last_lesson_id: null,
-    last_accessed_at: new Date().toISOString(), purchased_at: "2024-01-01",
-    course: {
-      id: "c1", title: "Advanced Neural Networks for Finance", description: "",
-      category: "ai", skill_level: "advanced", price: 19900, original_price: null,
-      instructor_id: "i1", status: "approved", thumbnail_url: null, total_duration: "24h",
-      total_lessons: 24, total_students: 1200, average_rating: 4.9, total_reviews: 180,
-      learning_outcomes: [], language: "English", created_at: "", updated_at: "",
-      instructor: { id: "i1", name: "Dr. Aris Thorne", email: "", role: "instructor", avatar_url: null, bio: null, title: null, company: null, created_at: "" },
-    },
-  },
-  {
-    id: "e2", user_id: "u1", course_id: "c2", progress: 32, completed_lessons: [], last_lesson_id: null,
-    last_accessed_at: new Date(Date.now() - 86400000).toISOString(), purchased_at: "2024-02-01",
-    course: {
-      id: "c2", title: "Smart Contract Security Audit Masterclass", description: "",
-      category: "fintech", skill_level: "intermediate", price: 14900, original_price: null,
-      instructor_id: "i2", status: "approved", thumbnail_url: null, total_duration: "18h",
-      total_lessons: 18, total_students: 890, average_rating: 4.7, total_reviews: 120,
-      learning_outcomes: [], language: "English", created_at: "", updated_at: "",
-      instructor: { id: "i2", name: "Sarah Chen", email: "", role: "instructor", avatar_url: null, bio: null, title: null, company: null, created_at: "" },
-    },
-  },
-  {
-    id: "e3", user_id: "u1", course_id: "c3", progress: 100, completed_lessons: [], last_lesson_id: null,
-    last_accessed_at: new Date(Date.now() - 172800000).toISOString(), purchased_at: "2023-12-01",
-    course: {
-      id: "c3", title: "Quantitative Trading with Python", description: "",
-      category: "fintech", skill_level: "beginner", price: 9900, original_price: null,
-      instructor_id: "i3", status: "approved", thumbnail_url: null, total_duration: "12h",
-      total_lessons: 42, total_students: 3200, average_rating: 4.8, total_reviews: 450,
-      learning_outcomes: [], language: "English", created_at: "", updated_at: "",
-      instructor: { id: "i3", name: "Markus Volkov", email: "", role: "instructor", avatar_url: null, bio: null, title: null, company: null, created_at: "" },
-    },
-  },
-];
-
 export default function LearnerDashboard() {
   const { user, profile } = useAuth();
-  const [enrollments, setEnrollments] = useState<any[]>(sampleEnrollments);
+  const [enrollments, setEnrollments] = useState<any[]>([]);
   const [filter, setFilter] = useState<"all" | "active" | "completed">("all");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
-      if (!user) return;
+      if (!user) {
+        setLoading(false);
+        return;
+      }
       try {
         const supabase = createClient();
         const { data } = await supabase
@@ -76,8 +40,9 @@ export default function LearnerDashboard() {
           .eq("user_id", user.id)
           .order("last_accessed_at", { ascending: false, nullsFirst: false });
 
-        if (data && data.length > 0) setEnrollments(data);
+        if (data) setEnrollments(data);
       } catch {}
+      setLoading(false);
     }
     load();
   }, [user]);
@@ -137,6 +102,24 @@ export default function LearnerDashboard() {
               <p className="text-xl font-bold mt-0.5">{totalHours}h</p>
             </div>
           </div>
+
+          {/* Empty State */}
+          {!loading && enrollments.length === 0 && (
+            <section className="text-center py-16 bg-bg-card border border-border rounded-xl mb-10">
+              <BookOpen className="w-12 h-12 text-text-muted mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">
+                You haven&apos;t enrolled in any courses yet
+              </h3>
+              <p className="text-text-secondary text-sm max-w-md mx-auto mb-6">
+                Browse our catalog and find a course that matches your learning goals.
+              </p>
+              <Link href="/courses">
+                <Button variant="primary" size="md">
+                  Browse Courses
+                </Button>
+              </Link>
+            </section>
+          )}
 
           {/* Continue Learning */}
           {currentCourse && (

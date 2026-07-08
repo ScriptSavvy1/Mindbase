@@ -14,6 +14,8 @@ import {
   Monitor,
   CheckCircle2,
   Share2,
+  MessageCircle,
+  Phone,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -25,110 +27,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { createClient } from "@/lib/supabase/client";
 import type { Course, Module, Lesson, Review } from "@/types";
 
-// Sample data for demo
-const sampleCourse: Course = {
-  id: "1",
-  title: "Large Language Models in Production: From RAG to Finetuning",
-  description:
-    "Master the deployment of LLMs. Build robust RAG pipelines, optimize latency with vLLM, and learn to finetune Llama-3 for specialized domain tasks.",
-  category: "ai",
-  skill_level: "intermediate",
-  price: 14900,
-  original_price: 24900,
-  instructor_id: "1",
-  status: "approved",
-  thumbnail_url: null,
-  total_duration: "24.5 hours",
-  total_lessons: 128,
-  total_students: 34201,
-  average_rating: 4.9,
-  total_reviews: 2400,
-  learning_outcomes: [
-    "Architect production-grade RAG systems using Pinecone and LangChain",
-    "Implement efficient LLM orchestration with FastAPI and Docker",
-    "Finetune Llama-3 using QLoRA for domain-specific knowledge",
-    "Master prompt engineering techniques: CoT, ReAct, and Few-shot",
-    "Optimize inference speeds using vLLM and NVIDIA Triton",
-    "Build robust evaluation frameworks for model safety and bias",
-  ],
-  language: "English [CC]",
-  created_at: "",
-  updated_at: "",
-  instructor: {
-    id: "1",
-    name: "Dr. Aris Thorne",
-    email: "",
-    role: "instructor",
-    avatar_url: null,
-    bio: "With over 15 years in Machine Learning and a PhD from Stanford, Aris has built large-scale AI infrastructure for Fortune 500 companies. He currently leads the LLM Deployment group at Neurix, specializing in low-latency inference and secure on-premise model hosting.",
-    title: "Lead AI Research Scientist",
-    company: "Neurix Systems",
-    created_at: "",
-  },
-};
-
-const sampleModules: (Module & { lessons: Lesson[] })[] = [
-  {
-    id: "m1",
-    course_id: "1",
-    title: "Foundation of Modern LLMs",
-    description:
-      "Introduction to Transformer architecture and Attention mechanisms.",
-    order: 1,
-    created_at: "",
-    lessons: [
-      { id: "l1", module_id: "m1", course_id: "1", title: "The History of NLP: From RNNs to GPT", video_url: null, duration: "12:45", order: 1, is_free_preview: true, created_at: "" },
-      { id: "l2", module_id: "m1", course_id: "1", title: "Understanding Self-Attention in 10 Minutes", video_url: null, duration: "09:20", order: 2, is_free_preview: true, created_at: "" },
-      { id: "l3", module_id: "m1", course_id: "1", title: "Setting up your Python environment with Conda", video_url: null, duration: "15:10", order: 3, is_free_preview: false, created_at: "" },
-      { id: "l4", module_id: "m1", course_id: "1", title: "HuggingFace Hub: The GitHub of AI", video_url: null, duration: "23:30", order: 4, is_free_preview: false, created_at: "" },
-    ],
-  },
-  {
-    id: "m2",
-    course_id: "1",
-    title: "Vector Databases & RAG Pipelines",
-    description:
-      "Retrieval Augmented Generation using Pinecone, Weaviate, and Milvus.",
-    order: 2,
-    created_at: "",
-    lessons: [
-      { id: "l5", module_id: "m2", course_id: "1", title: "What is RAG and Why Does it Matter?", video_url: null, duration: "14:20", order: 1, is_free_preview: false, created_at: "" },
-      { id: "l6", module_id: "m2", course_id: "1", title: "Building your first Pinecone index", video_url: null, duration: "28:15", order: 2, is_free_preview: false, created_at: "" },
-      { id: "l7", module_id: "m2", course_id: "1", title: "Advanced chunking strategies", video_url: null, duration: "19:40", order: 3, is_free_preview: false, created_at: "" },
-    ],
-  },
-  {
-    id: "m3",
-    course_id: "1",
-    title: "Advanced Finetuning with QLoRA",
-    description:
-      "Quantization and Low-Rank Adaptation for consumer GPUs.",
-    order: 3,
-    created_at: "",
-    lessons: [
-      { id: "l8", module_id: "m3", course_id: "1", title: "Understanding LoRA and QLoRA", video_url: null, duration: "22:10", order: 1, is_free_preview: false, created_at: "" },
-      { id: "l9", module_id: "m3", course_id: "1", title: "Preparing training data for finetuning", video_url: null, duration: "18:55", order: 2, is_free_preview: false, created_at: "" },
-    ],
-  },
-];
-
-const sampleReviews: Review[] = [
-  {
-    id: "r1", course_id: "1", user_id: "u1", user_name: "Sarah Jenkins",
-    user_avatar: null, rating: 5, created_at: "2024-11-15T00:00:00Z",
-    comment: "The section on vLLM optimization alone saved our team months of R&D. Aris explains complex latency bottlenecks with perfect clarity.",
-  },
-  {
-    id: "r2", course_id: "1", user_id: "u2", user_name: "Markus Weber",
-    user_avatar: null, rating: 5, created_at: "2024-11-10T00:00:00Z",
-    comment: "Best technical course I've taken. It goes beyond the basic tutorials you find on YouTube and actually addresses production issues.",
-  },
-  {
-    id: "r3", course_id: "1", user_id: "u3", user_name: "Anya Petrov",
-    user_avatar: null, rating: 4, created_at: "2024-10-28T00:00:00Z",
-    comment: "I transitioned from Web Dev to AI using this series. The roadmap is structured logically and the hands-on labs are excellent.",
-  },
-];
+const WHATSAPP_NUMBER = "25472929631";
 
 export default function CourseDetailPage({
   params,
@@ -136,12 +35,12 @@ export default function CourseDetailPage({
   params: Promise<{ courseId: string }>;
 }) {
   const { courseId } = use(params);
-  const { user, profile } = useAuth();
-  const [course, setCourse] = useState<Course>(sampleCourse);
-  const [modules, setModules] = useState(sampleModules);
-  const [reviews, setReviews] = useState<Review[]>(sampleReviews);
+  const { user } = useAuth();
+  const [course, setCourse] = useState<Course | null>(null);
+  const [modules, setModules] = useState<(Module & { lessons: Lesson[] })[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [isEnrolled, setIsEnrolled] = useState(false);
-  const [enrolling, setEnrolling] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
@@ -164,7 +63,7 @@ export default function CourseDetailPage({
           .eq("course_id", courseId)
           .order("order", { ascending: true });
 
-        if (modulesData && modulesData.length > 0) {
+        if (modulesData) {
           setModules(
             modulesData.map((m: any) => ({
               ...m,
@@ -183,7 +82,7 @@ export default function CourseDetailPage({
           .order("created_at", { ascending: false })
           .limit(6);
 
-        if (reviewsData && reviewsData.length > 0) setReviews(reviewsData);
+        if (reviewsData) setReviews(reviewsData);
 
         // Check enrollment
         if (user) {
@@ -197,33 +96,12 @@ export default function CourseDetailPage({
           setIsEnrolled(!!enrollment);
         }
       } catch {
-        // Use sample data
+        // Course not found or Supabase error
       }
+      setLoading(false);
     }
     load();
   }, [courseId, user]);
-
-  const handleEnroll = async () => {
-    if (!user) {
-      window.location.href = `/login?redirect=/courses/${courseId}`;
-      return;
-    }
-
-    setEnrolling(true);
-    try {
-      const supabase = createClient();
-      await supabase.from("enrollments").insert({
-        user_id: user.id,
-        course_id: courseId,
-        progress: 0,
-        completed_lessons: [],
-      });
-      setIsEnrolled(true);
-    } catch (err) {
-      console.error("Enrollment failed:", err);
-    }
-    setEnrolling(false);
-  };
 
   const categoryLabels: Record<string, string> = {
     ai: "AI Engineering",
@@ -231,12 +109,48 @@ export default function CourseDetailPage({
     other: "Other Tech",
   };
 
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen pt-32 flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // Course not found state
+  if (!course) {
+    return (
+      <div className="min-h-screen pt-32 flex flex-col items-center justify-center text-center px-4">
+        <h1 className="text-2xl font-bold mb-2">Course not found</h1>
+        <p className="text-text-secondary mb-6">
+          This course may have been removed or doesn&apos;t exist.
+        </p>
+        <Link href="/courses">
+          <Button variant="primary" size="md">
+            Browse All Courses
+          </Button>
+        </Link>
+      </div>
+    );
+  }
+
   const discount =
     course.original_price && course.original_price > course.price
       ? Math.round(
           ((course.original_price - course.price) / course.original_price) * 100
         )
       : null;
+
+  const whatsappMessage = encodeURIComponent(
+    `Hi, I'm interested in the course: "${course.title}" on Mindbase Academy. I'd like to learn more about enrollment and payment options.`
+  );
+  const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${whatsappMessage}`;
+
+  const scheduleMessage = encodeURIComponent(
+    `Hi, I'd like to schedule a call to discuss the course: "${course.title}" on Mindbase Academy.`
+  );
+  const scheduleUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${scheduleMessage}`;
 
   return (
     <div className="min-h-screen pt-16">
@@ -250,11 +164,13 @@ export default function CourseDetailPage({
                 <Badge category={course.category}>
                   {categoryLabels[course.category]}
                 </Badge>
-                <StarRating
-                  rating={course.average_rating}
-                  count={course.total_reviews}
-                  size="md"
-                />
+                {course.total_reviews > 0 && (
+                  <StarRating
+                    rating={course.average_rating}
+                    count={course.total_reviews}
+                    size="md"
+                  />
+                )}
               </div>
 
               <h1 className="text-3xl sm:text-4xl font-bold leading-tight">
@@ -270,14 +186,18 @@ export default function CourseDetailPage({
                   <BarChart3 className="w-4 h-4" />
                   Level: {course.skill_level}
                 </span>
-                <span className="flex items-center gap-1.5 px-3 py-1.5 bg-bg-card border border-border rounded-lg text-text-secondary">
-                  <Clock className="w-4 h-4" />
-                  Duration: {course.total_duration}
-                </span>
-                <span className="flex items-center gap-1.5 px-3 py-1.5 bg-bg-card border border-border rounded-lg text-text-secondary">
-                  <Users className="w-4 h-4" />
-                  {course.total_students?.toLocaleString()} Students
-                </span>
+                {course.total_duration && (
+                  <span className="flex items-center gap-1.5 px-3 py-1.5 bg-bg-card border border-border rounded-lg text-text-secondary">
+                    <Clock className="w-4 h-4" />
+                    Duration: {course.total_duration}
+                  </span>
+                )}
+                {course.total_students > 0 && (
+                  <span className="flex items-center gap-1.5 px-3 py-1.5 bg-bg-card border border-border rounded-lg text-text-secondary">
+                    <Users className="w-4 h-4" />
+                    {course.total_students?.toLocaleString()} Students
+                  </span>
+                )}
                 <span className="flex items-center gap-1.5 px-3 py-1.5 bg-bg-card border border-border rounded-lg text-text-secondary">
                   <Globe className="w-4 h-4" />
                   {course.language}
@@ -327,20 +247,35 @@ export default function CourseDetailPage({
                     </Button>
                   </Link>
                 ) : (
-                  <Button
-                    variant="primary"
-                    size="lg"
-                    className="w-full"
-                    onClick={handleEnroll}
-                    loading={enrolling}
-                  >
-                    Enroll Now
-                  </Button>
-                )}
+                  <div className="space-y-3">
+                    <a
+                      href={whatsappUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold text-white transition-all"
+                      style={{ backgroundColor: "#25D366" }}
+                      onMouseEnter={(e) =>
+                        (e.currentTarget.style.backgroundColor = "#1ebe57")
+                      }
+                      onMouseLeave={(e) =>
+                        (e.currentTarget.style.backgroundColor = "#25D366")
+                      }
+                    >
+                      <MessageCircle className="w-5 h-5" />
+                      Message on WhatsApp
+                    </a>
 
-                <Button variant="secondary" size="md" className="w-full">
-                  Try Free Preview
-                </Button>
+                    <a
+                      href={scheduleUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-bg-elevated border border-border rounded-lg text-sm font-semibold text-text-primary hover:bg-bg-hover hover:border-border-hover transition-all"
+                    >
+                      <Phone className="w-4 h-4" />
+                      Schedule a Call
+                    </a>
+                  </div>
+                )}
 
                 {/* Course Includes */}
                 <div className="space-y-3 pt-4 border-t border-border">
@@ -348,9 +283,12 @@ export default function CourseDetailPage({
                     This course includes
                   </p>
                   {[
-                    { icon: Clock, text: `${course.total_duration} on-demand video` },
+                    {
+                      icon: Clock,
+                      text: `${course.total_duration || "On-demand"} video`,
+                    },
                     { icon: Award, text: "Certificate of completion" },
-                    { icon: Download, text: "14 downloadable resources" },
+                    { icon: Download, text: "Downloadable resources" },
                     { icon: Infinity, text: "Full lifetime access" },
                     { icon: Monitor, text: "Access on mobile and TV" },
                   ].map((item, i) => (
@@ -395,17 +333,19 @@ export default function CourseDetailPage({
         )}
 
         {/* Curriculum */}
-        <section>
-          <CurriculumAccordion
-            modules={modules}
-            isEnrolled={isEnrolled}
-            onLessonClick={(lessonId) => {
-              if (isEnrolled) {
-                window.location.href = `/learn/${courseId}?lesson=${lessonId}`;
-              }
-            }}
-          />
-        </section>
+        {modules.length > 0 && (
+          <section>
+            <CurriculumAccordion
+              modules={modules}
+              isEnrolled={isEnrolled}
+              onLessonClick={(lessonId) => {
+                if (isEnrolled) {
+                  window.location.href = `/learn/${courseId}?lesson=${lessonId}`;
+                }
+              }}
+            />
+          </section>
+        )}
 
         {/* Instructor */}
         {course.instructor && (
@@ -416,7 +356,7 @@ export default function CourseDetailPage({
                 rating: course.average_rating,
                 totalReviews: course.total_reviews,
                 totalStudents: course.total_students,
-                totalCourses: 12,
+                totalCourses: 1,
               }}
             />
           </section>

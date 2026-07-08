@@ -19,28 +19,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { createClient } from "@/lib/supabase/client";
 import type { Module, Lesson, Enrollment } from "@/types";
 
-// Sample data
-const sampleModules: (Module & { lessons: Lesson[] })[] = [
-  {
-    id: "m1", course_id: "1", title: "Fintech Architecture", description: null,
-    order: 1, created_at: "",
-    lessons: [
-      { id: "l1", module_id: "m1", course_id: "1", title: "Introduction to Core Banking", video_url: null, duration: "08:20", order: 1, is_free_preview: true, created_at: "" },
-      { id: "l2", module_id: "m1", course_id: "1", title: "Ledger Systems & Double Entry", video_url: null, duration: "15:45", order: 2, is_free_preview: false, created_at: "" },
-      { id: "l3", module_id: "m1", course_id: "1", title: "Scalable Payment Gateways", video_url: null, duration: "24:30", order: 3, is_free_preview: false, created_at: "" },
-      { id: "l4", module_id: "m1", course_id: "1", title: "Handling Concurrent Transactions", video_url: null, duration: "12:10", order: 4, is_free_preview: false, created_at: "" },
-    ],
-  },
-  {
-    id: "m2", course_id: "1", title: "Compliance & Security", description: null,
-    order: 2, created_at: "",
-    lessons: [
-      { id: "l5", module_id: "m2", course_id: "1", title: "KYC/AML Fundamentals", video_url: null, duration: "18:20", order: 1, is_free_preview: false, created_at: "" },
-      { id: "l6", module_id: "m2", course_id: "1", title: "PCI DSS Compliance for Developers", video_url: null, duration: "22:15", order: 2, is_free_preview: false, created_at: "" },
-    ],
-  },
-];
-
 export default function CoursePlayerPage({
   params,
 }: {
@@ -51,10 +29,10 @@ export default function CoursePlayerPage({
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [modules, setModules] = useState(sampleModules);
+  const [modules, setModules] = useState<(Module & { lessons: Lesson[] })[]>([]);
   const [enrollment, setEnrollment] = useState<Enrollment | null>(null);
   const [completedLessons, setCompletedLessons] = useState<string[]>([]);
-  const [courseName, setCourseName] = useState("Zero to Fintech Engineer");
+  const [courseName, setCourseName] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [loading, setLoading] = useState(true);
 
@@ -118,7 +96,7 @@ export default function CoursePlayerPage({
           .eq("course_id", courseId)
           .order("order", { ascending: true });
 
-        if (modulesData && modulesData.length > 0) {
+        if (modulesData) {
           const sorted = modulesData.map((m: any) => ({
             ...m,
             lessons: (m.lessons || []).sort((a: any, b: any) => a.order - b.order),
@@ -134,7 +112,7 @@ export default function CoursePlayerPage({
           }
         }
       } catch {
-        // Use sample data
+        // Supabase error
       }
       setLoading(false);
     }

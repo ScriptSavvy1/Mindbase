@@ -2,82 +2,18 @@
 
 import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Search, X } from "lucide-react";
+import { Search, X, BookOpen } from "lucide-react";
 import { CourseCard } from "@/components/ui/CourseCard";
 import { FilterSidebar } from "@/components/catalog/FilterSidebar";
 import { Button } from "@/components/ui/Button";
 import type { Course, CourseCategory, SkillLevel } from "@/types";
 import { createClient } from "@/lib/supabase/client";
 
-// Sample courses for when Supabase isn't configured
-const sampleCourses: Course[] = [
-  {
-    id: "1", title: "Generative AI Systems: From Prompt to Production", description: "",
-    category: "ai", skill_level: "intermediate", price: 19900, original_price: null,
-    instructor_id: "1", status: "approved", thumbnail_url: null,
-    total_duration: "18h", total_lessons: 96, total_students: 12400,
-    average_rating: 4.9, total_reviews: 1250, learning_outcomes: [],
-    language: "English", created_at: "", updated_at: "",
-    instructor: { id: "1", name: "Dr. Elena Vance", email: "", role: "instructor",
-      avatar_url: null, bio: null, title: null, company: null, created_at: "" },
-  },
-  {
-    id: "2", title: "Fintech 2.0: Building Decentralized Ledger Systems", description: "",
-    category: "fintech", skill_level: "advanced", price: 24900, original_price: null,
-    instructor_id: "2", status: "approved", thumbnail_url: null,
-    total_duration: "24h", total_lessons: 128, total_students: 8200,
-    average_rating: 4.8, total_reviews: 890, learning_outcomes: [],
-    language: "English", created_at: "", updated_at: "",
-    instructor: { id: "2", name: "Marcus Thorne", email: "", role: "instructor",
-      avatar_url: null, bio: null, title: null, company: null, created_at: "" },
-  },
-  {
-    id: "3", title: "Quantitative Trading Algorithms: Theory and Implementation", description: "",
-    category: "fintech", skill_level: "advanced", price: 15900, original_price: null,
-    instructor_id: "3", status: "approved", thumbnail_url: null,
-    total_duration: "12h", total_lessons: 64, total_students: 5600,
-    average_rating: 4.7, total_reviews: 620, learning_outcomes: [],
-    language: "English", created_at: "", updated_at: "",
-    instructor: { id: "3", name: "Sarah Chen", email: "", role: "instructor",
-      avatar_url: null, bio: null, title: null, company: null, created_at: "" },
-  },
-  {
-    id: "4", title: "Machine Learning Ops (MLOps): Deploying at Scale", description: "",
-    category: "ai", skill_level: "intermediate", price: 12900, original_price: null,
-    instructor_id: "4", status: "approved", thumbnail_url: null,
-    total_duration: "10h", total_lessons: 52, total_students: 15100,
-    average_rating: 4.9, total_reviews: 1800, learning_outcomes: [],
-    language: "English", created_at: "", updated_at: "",
-    instructor: { id: "4", name: "David Kim", email: "", role: "instructor",
-      avatar_url: null, bio: null, title: null, company: null, created_at: "" },
-  },
-  {
-    id: "5", title: "Zero to Fintech Analyst: The Complete Career Path", description: "",
-    category: "fintech", skill_level: "beginner", price: 39900, original_price: null,
-    instructor_id: "5", status: "approved", thumbnail_url: null,
-    total_duration: "85h", total_lessons: 320, total_students: 24500,
-    average_rating: 5.0, total_reviews: 3200, learning_outcomes: [],
-    language: "English", created_at: "", updated_at: "",
-    instructor: { id: "5", name: "Mindbase Expert", email: "", role: "instructor",
-      avatar_url: null, bio: null, title: null, company: null, created_at: "" },
-  },
-  {
-    id: "6", title: "Advanced Natural Language Processing with Transformers", description: "",
-    category: "ai", skill_level: "advanced", price: 18900, original_price: null,
-    instructor_id: "1", status: "approved", thumbnail_url: null,
-    total_duration: "15h", total_lessons: 78, total_students: 9800,
-    average_rating: 4.8, total_reviews: 950, learning_outcomes: [],
-    language: "English", created_at: "", updated_at: "",
-    instructor: { id: "1", name: "Dr. Elena Vance", email: "", role: "instructor",
-      avatar_url: null, bio: null, title: null, company: null, created_at: "" },
-  },
-];
-
 function CatalogContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [courses, setCourses] = useState<Course[]>(sampleCourses);
-  const [loading, setLoading] = useState(false);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState(searchParams.get("search") || "");
   const [sort, setSort] = useState(searchParams.get("sort") || "popular");
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
@@ -89,7 +25,7 @@ function CatalogContent() {
   const [priceType, setPriceType] = useState(
     searchParams.get("price") || ""
   );
-  const [totalCount, setTotalCount] = useState(sampleCourses.length);
+  const [totalCount, setTotalCount] = useState(0);
 
   const fetchCourses = useCallback(async () => {
     setLoading(true);
@@ -127,12 +63,12 @@ function CatalogContent() {
       query = query.limit(12);
 
       const { data, count, error } = await query;
-      if (!error && data && data.length > 0) {
-        setCourses(data as Course[]);
-        setTotalCount(count || data.length);
+      if (!error) {
+        setCourses((data as Course[]) || []);
+        setTotalCount(count || 0);
       }
     } catch {
-      // Use sample data
+      // Supabase not configured — show empty state
     }
     setLoading(false);
   }, [selectedCategories, selectedLevels, priceType, search, sort]);
@@ -151,7 +87,7 @@ function CatalogContent() {
   const categoryLabels: Record<string, string> = {
     ai: "AI & ML",
     fintech: "Fintech",
-    other: "Web3",
+    other: "Other Tech",
   };
 
   const levelLabels: Record<string, string> = {
@@ -278,25 +214,38 @@ function CatalogContent() {
                   </div>
                 ))}
               </div>
-            ) : (
+            ) : courses.length > 0 ? (
               <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6 stagger">
                 {courses.map((course) => (
                   <CourseCard key={course.id} course={course} />
                 ))}
               </div>
+            ) : (
+              <div className="text-center py-20 bg-bg-card border border-border rounded-xl">
+                <BookOpen className="w-12 h-12 text-text-muted mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">
+                  No courses published yet
+                </h3>
+                <p className="text-text-secondary text-sm max-w-md mx-auto">
+                  Check back soon — our expert instructors are preparing the
+                  first courses right now.
+                </p>
+              </div>
             )}
 
             {/* Load More */}
-            <div className="text-center mt-12">
-              <p className="text-sm text-text-muted mb-4">
-                Showing{" "}
-                <span className="text-accent font-medium">{courses.length}</span> of{" "}
-                <span className="font-medium">{totalCount}</span> courses
-              </p>
-              <Button variant="secondary" size="lg">
-                Load More Courses
-              </Button>
-            </div>
+            {courses.length > 0 && totalCount > courses.length && (
+              <div className="text-center mt-12">
+                <p className="text-sm text-text-muted mb-4">
+                  Showing{" "}
+                  <span className="text-accent font-medium">{courses.length}</span> of{" "}
+                  <span className="font-medium">{totalCount}</span> courses
+                </p>
+                <Button variant="secondary" size="lg">
+                  Load More Courses
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </section>

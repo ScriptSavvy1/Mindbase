@@ -20,39 +20,18 @@ import { Badge } from "@/components/ui/Badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { createClient } from "@/lib/supabase/client";
 
-// Sample data
-const sampleStats = {
-  totalUsers: 15420,
-  totalCourses: 186,
-  pendingReviews: 8,
-  totalRevenue: 12450000,
-};
-
-const samplePendingCourses = [
-  { id: "p1", title: "Advanced Rust for Blockchain", instructor_name: "Elena Rodriguez", category: "fintech", submitted_at: "2024-11-05", lessons: 42 },
-  { id: "p2", title: "GANs for Financial Data Synthesis", instructor_name: "Dr. Sarah Chen", category: "ai", submitted_at: "2024-11-04", lessons: 28 },
-  { id: "p3", title: "Real-Time Fraud Detection", instructor_name: "Marcus Thorne", category: "fintech", submitted_at: "2024-11-03", lessons: 36 },
-];
-
-const samplePendingInstructors = [
-  { id: "u1", name: "Alex Johnson", email: "alex@startup.io", applied_at: "2024-11-06", bio: "10 years in ML engineering at Google Brain" },
-  { id: "u2", name: "Priya Sharma", email: "priya@fintech.co", applied_at: "2024-11-05", bio: "Lead quant developer at Jump Trading" },
-];
-
-const sampleRecentUsers = [
-  { id: "ru1", name: "Jordan Lee", email: "jordan@dev.io", role: "learner", created_at: "2024-11-07" },
-  { id: "ru2", name: "Maria Costa", email: "maria@eng.com", role: "instructor", created_at: "2024-11-06" },
-  { id: "ru3", name: "Sam Park", email: "sam@tech.io", role: "learner", created_at: "2024-11-06" },
-  { id: "ru4", name: "Taylor Wu", email: "taylor@ml.co", role: "pending_instructor", created_at: "2024-11-05" },
-];
-
 export default function AdminPanel() {
   const { user, profile } = useAuth();
   const router = useRouter();
-  const [stats, setStats] = useState(sampleStats);
-  const [pendingCourses, setPendingCourses] = useState(samplePendingCourses);
-  const [pendingInstructors, setPendingInstructors] = useState(samplePendingInstructors);
-  const [recentUsers, setRecentUsers] = useState(sampleRecentUsers);
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    totalCourses: 0,
+    pendingReviews: 0,
+    totalRevenue: 0,
+  });
+  const [pendingCourses, setPendingCourses] = useState<any[]>([]);
+  const [pendingInstructors, setPendingInstructors] = useState<any[]>([]);
+  const [recentUsers, setRecentUsers] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<"courses" | "instructors" | "users">("courses");
 
   useEffect(() => {
@@ -73,10 +52,10 @@ export default function AdminPanel() {
         ]);
 
         setStats({
-          totalUsers: usersRes.count || sampleStats.totalUsers,
-          totalCourses: coursesRes.count || sampleStats.totalCourses,
-          pendingReviews: pendingRes.count || sampleStats.pendingReviews,
-          totalRevenue: sampleStats.totalRevenue,
+          totalUsers: usersRes.count || 0,
+          totalCourses: coursesRes.count || 0,
+          pendingReviews: pendingRes.count || 0,
+          totalRevenue: 0,
         });
 
         // Pending courses
@@ -86,7 +65,7 @@ export default function AdminPanel() {
           .eq("status", "pending")
           .order("created_at", { ascending: false });
 
-        if (pendingCoursesData && pendingCoursesData.length > 0) {
+        if (pendingCoursesData) {
           setPendingCourses(
             pendingCoursesData.map((c: any) => ({
               id: c.id,
@@ -106,7 +85,7 @@ export default function AdminPanel() {
           .eq("role", "pending_instructor")
           .order("created_at", { ascending: false });
 
-        if (pendingInstructorsData && pendingInstructorsData.length > 0) {
+        if (pendingInstructorsData) {
           setPendingInstructors(
             pendingInstructorsData.map((p: any) => ({
               id: p.id,
@@ -125,7 +104,7 @@ export default function AdminPanel() {
           .order("created_at", { ascending: false })
           .limit(10);
 
-        if (usersData && usersData.length > 0) {
+        if (usersData) {
           setRecentUsers(
             usersData.map((u: any) => ({
               id: u.id,

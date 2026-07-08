@@ -23,63 +23,17 @@ import { useAuth } from "@/contexts/AuthContext";
 import { createClient } from "@/lib/supabase/client";
 import type { Course } from "@/types";
 
-// Sample data
-const sampleStats = {
-  totalRevenue: 4832000,
-  totalStudents: 4510,
-  activeCourses: 12,
-  totalCourses: 12,
-  avgRating: 4.85,
-};
-
-const sampleCourses: (Course & { revenue?: number })[] = [
-  {
-    id: "1", title: "Advanced LLM Fine-Tuning", description: "", category: "ai",
-    skill_level: "advanced", price: 19900, original_price: null, instructor_id: "1",
-    status: "approved", thumbnail_url: null, total_duration: "24h", total_lessons: 128,
-    total_students: 1240, average_rating: 4.9, total_reviews: 180, learning_outcomes: [],
-    language: "English", created_at: "2024-11-01T00:00:00Z", updated_at: "2024-11-08T00:00:00Z",
-    revenue: 1240000,
-  },
-  {
-    id: "2", title: "Fintech Compliance for Devs", description: "", category: "fintech",
-    skill_level: "intermediate", price: 14900, original_price: null, instructor_id: "1",
-    status: "approved", thumbnail_url: null, total_duration: "18h", total_lessons: 96,
-    total_students: 850, average_rating: 4.7, total_reviews: 120, learning_outcomes: [],
-    language: "English", created_at: "2024-10-15T00:00:00Z", updated_at: "2024-11-08T00:00:00Z",
-    revenue: 850000,
-  },
-  {
-    id: "3", title: "Real-time Fraud Detection with Rust", description: "", category: "fintech",
-    skill_level: "advanced", price: 0, original_price: null, instructor_id: "1",
-    status: "draft", thumbnail_url: null, total_duration: null, total_lessons: 0,
-    total_students: 0, average_rating: 0, total_reviews: 0, learning_outcomes: [],
-    language: "English", created_at: "2024-11-05T00:00:00Z", updated_at: "2024-11-08T00:00:00Z",
-    revenue: 0,
-  },
-  {
-    id: "4", title: "DeFi Protocol Architecture", description: "", category: "fintech",
-    skill_level: "advanced", price: 24900, original_price: null, instructor_id: "1",
-    status: "pending", thumbnail_url: null, total_duration: "15h", total_lessons: 84,
-    total_students: 320, average_rating: 4.8, total_reviews: 45, learning_outcomes: [],
-    language: "English", created_at: "2024-10-20T00:00:00Z", updated_at: "2024-11-08T00:00:00Z",
-    revenue: 640000,
-  },
-  {
-    id: "5", title: "Neural Networks from Scratch", description: "", category: "ai",
-    skill_level: "beginner", price: 9900, original_price: null, instructor_id: "1",
-    status: "approved", thumbnail_url: null, total_duration: "32h", total_lessons: 200,
-    total_students: 2100, average_rating: 4.9, total_reviews: 310, learning_outcomes: [],
-    language: "English", created_at: "2024-08-01T00:00:00Z", updated_at: "2024-11-08T00:00:00Z",
-    revenue: 2100000,
-  },
-];
-
 export default function InstructorDashboard() {
   const { user, profile } = useAuth();
   const router = useRouter();
-  const [stats, setStats] = useState(sampleStats);
-  const [courses, setCourses] = useState(sampleCourses);
+  const [stats, setStats] = useState({
+    totalRevenue: 0,
+    totalStudents: 0,
+    activeCourses: 0,
+    totalCourses: 0,
+    avgRating: 0,
+  });
+  const [courses, setCourses] = useState<(Course & { revenue?: number })[]>([]);
 
   useEffect(() => {
     if (!user) return;
@@ -97,7 +51,7 @@ export default function InstructorDashboard() {
           .eq("instructor_id", user!.id)
           .order("updated_at", { ascending: false });
 
-        if (data && data.length > 0) {
+        if (data) {
           setCourses(data as any);
 
           const approved = data.filter((c: any) => c.status === "approved");
